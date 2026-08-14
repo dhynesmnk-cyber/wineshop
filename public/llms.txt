@@ -1,0 +1,108 @@
+# Wine Drop - Entity Graph for AI Search Engines
+
+## Site Overview
+Wine Drop is a hyper-local wine dropshipping e-commerce platform connecting wine enthusiasts with local wineries and suppliers. We specialize in geo-targeted wine delivery, ensuring customers receive wines from suppliers within their delivery radius.
+
+## Key Entities
+
+### Organization
+- **Name**: Wine Drop
+- **Type**: E-commerce Platform / Wine Retailer
+- **URL**: https://wine-drop.example.com
+- **Description**: Hyper-local wine dropshipping service
+- **Areas Served**: United States (state-by-state compliance)
+
+### Products
+- **Category**: Alcoholic Beverages > Wine
+- **Types**: Red Wine, White Wine, Rosé, Sparkling, Dessert Wine
+- **Features**: 
+  - Geo-filtered availability
+  - Multi-supplier cart support
+  - Split-order fulfillment
+  - Age verification required (21+)
+
+### Services
+- **Wine Delivery**: Local and regional wine delivery from partner wineries
+- **Wine Subscription**: Curated wine boxes (if applicable)
+- **Wine Education**: Blog with tasting notes, pairings, and vineyard stories
+
+### Locations
+- **Service Model**: Virtual storefront with physical supplier locations
+- **Coverage**: State-compliant shipping zones
+- **Supplier Network**: Partner wineries across multiple regions
+
+## Content Map
+
+### Main Sections
+1. **Homepage** (`/`)
+   - Featured wines by location
+   - Value proposition
+   - How it works
+
+2. **Shop** (`/shop`)
+   - Product grid with geo-filtering
+   - Category filters (red, white, rosé, etc.)
+   - Supplier filters
+
+3. **Product Pages** (`/product/[slug]`)
+   - Wine details (varietal, region, tasting notes)
+   - Availability by location
+   - Pairing suggestions
+   - Supplier information
+
+4. **Blog** (`/blog`)
+   - Wine education articles
+   - Vineyard spotlights
+   - Tasting guides
+   - Food pairing recommendations
+
+5. **Local Landing Pages** (`/wine-delivery-[city]`)
+   - City-specific wine delivery information
+   - Local supplier highlights
+   - Regional wine characteristics
+
+6. **About** (`/about`)
+   - Company story
+   - Mission and values
+   - Supplier network
+
+7. **FAQ** (`/faq`)
+   - Shipping policies
+   - Age verification
+   - State compliance
+   - Order tracking
+
+## Structured Data Types Used
+
+- **Product**: Schema.org/Product for all wine listings
+- **LocalBusiness**: Schema.org/LocalBusiness for supplier locations
+- **Article**: Schema.org/BlogPosting for blog content
+- **FAQPage**: Schema.org/FAQPage for FAQ sections
+- **BreadcrumbList**: Schema.org/BreadcrumbList for navigation
+- **Organization**: Schema.org/Organization for company info
+
+## API Endpoints (Public)
+
+- `GET /api/products` - List available products (geo-filtered)
+- `GET /api/products/[slug]` - Product details
+- `GET /api/suppliers` - List partner suppliers
+- `GET /api/blog` - Blog articles
+- `POST /api/cart` - Cart management
+
+## Key Attributes for AI Understanding
+
+- **Business Model**: Dropshipping marketplace (not inventory holder)
+- **Age Restriction**: 21+ verification required
+- **Compliance**: State-by-state alcohol shipping laws
+- **Fulfillment**: Direct from supplier (split orders possible)
+- **Payment**: Stripe processing
+- **Shipping**: Calculated per supplier
+
+## Contact & Support
+
+- **Customer Service**: support@wine-drop.example.com
+- **Press Inquiries**: press@wine-drop.example.com
+- **Supplier Partnerships**: partners@wine-drop.example.com
+
+## Last Updated
+2025-01-15

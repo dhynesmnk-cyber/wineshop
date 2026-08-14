@@ -1,0 +1,211 @@
+---
+interface Props {
+  onVerify?: () => void;
+}
+
+const { onVerify } = Astro.props;
+---
+
+<div
+  id="age-gate"
+  class="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="age-gate-title"
+>
+  <div class="bg-cream-50 max-w-md w-full rounded-lg shadow-2xl overflow-hidden border-2 border-burgundy-600">
+    <!-- Decorative header -->
+    <div class="bg-burgundy-600 h-2"></div>
+    
+    <div class="p-8 text-center">
+      <!-- Wine glass icon -->
+      <div class="mb-6">
+        <svg
+          class="w-16 h-16 mx-auto text-burgundy-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
+      </div>
+      
+      <h2 id="age-gate-title" class="text-3xl font-display font-bold text-burgundy-700 mb-4">
+        Age Verification Required
+      </h2>
+      
+      <p class="text-gray-700 mb-6 leading-relaxed">
+        This website contains information about alcoholic beverages. 
+        You must be at least <strong class="text-burgundy-600 font-semibold">21 years of age</strong> to enter.
+      </p>
+      
+      <div class="bg-cream-100 border border-burgundy-200 rounded-md p-4 mb-6">
+        <p class="text-sm text-gray-600">
+          By entering this site, you confirm that you are of legal drinking age in your jurisdiction 
+          and agree to our <a href="/terms" class="text-burgundy-600 underline hover:text-burgundy-700">Terms of Service</a>.
+        </p>
+      </div>
+      
+      <div class="flex flex-col sm:flex-row gap-4">
+        <button
+          id="age-verify-yes"
+          class="flex-1 bg-burgundy-600 hover:bg-burgundy-700 text-white font-semibold py-4 px-6 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-burgundy-500 focus:ring-offset-2"
+          aria-label="Yes, I am 21 or older - Enter the site"
+        >
+          Yes, I am 21+
+        </button>
+        
+        <button
+          id="age-verify-no"
+          class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-4 px-6 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+          aria-label="No, I am under 21 - Leave the site"
+        >
+          No, I am under 21
+        </button>
+      </div>
+      
+      <p class="mt-6 text-xs text-gray-500">
+        Your verification is stored locally and will not be requested again on this device.
+      </p>
+    </div>
+    
+    <!-- Decorative footer -->
+    <div class="bg-gold-500 h-1"></div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'wine_drop_age_verified';
+  const VERIFICATION_EXPIRY_DAYS = 30;
+  
+  interface AgeVerificationData {
+    verified: boolean;
+    timestamp: number;
+  }
+  
+  function checkAgeVerification(): boolean {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return false;
+      
+      const data: AgeVerificationData = JSON.parse(stored);
+      const now = Date.now();
+      const expiryMs = VERIFICATION_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
+      
+      return data.verified && (now - data.timestamp < expiryMs);
+    } catch (e) {
+      console.error('Error checking age verification:', e);
+      return false;
+    }
+  }
+  
+  function setAgeVerification(verified: boolean): void {
+    try {
+      const data: AgeVerificationData = {
+        verified,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+      console.error('Error saving age verification:', e);
+    }
+  }
+  
+  function hideAgeGate(): void {
+    const ageGate = document.getElementById('age-gate');
+    if (ageGate) {
+      ageGate.style.opacity = '0';
+      ageGate.style.transition = 'opacity 0.3s ease';
+      setTimeout(() => {
+        ageGate.style.display = 'none';
+        document.body.style.overflow = '';
+      }, 300);
+    }
+  }
+  
+  function showExitMessage(): void {
+    document.body.innerHTML = `
+      <div class="min-h-screen bg-cream-50 flex items-center justify-center p-4">
+        <div class="max-w-md text-center">
+          <h1 class="text-3xl font-display font-bold text-burgundy-700 mb-4">
+            Access Denied
+          </h1>
+          <p class="text-gray-700 mb-6">
+            We're sorry, but you must be of legal drinking age to access this website.
+          </p>
+          <p class="text-gray-600 text-sm">
+            Please return when you meet the age requirement.
+          </p>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Initialize age gate
+  document.addEventListener('DOMContentLoaded', () => {
+    const ageGate = document.getElementById('age-gate');
+    const verifyBtn = document.getElementById('age-verify-yes');
+    const denyBtn = document.getElementById('age-verify-no');
+    
+    // Check if already verified
+    if (checkAgeVerification()) {
+      if (ageGate) {
+        ageGate.style.display = 'none';
+      }
+      return;
+    }
+    
+    // Prevent scrolling while age gate is active
+    document.body.style.overflow = 'hidden';
+    
+    // Handle verification
+    verifyBtn?.addEventListener('click', () => {
+      setAgeVerification(true);
+      hideAgeGate();
+    });
+    
+    // Handle denial
+    denyBtn?.addEventListener('click', () => {
+      showExitMessage();
+      // Optionally redirect to a neutral site
+      // window.location.href = 'https://www.google.com';
+    });
+    
+    // Keyboard accessibility - Enter key on focused button
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && checkAgeVerification()) {
+        hideAgeGate();
+      }
+    });
+  });
+</script>
+
+<style>
+  /* Ensure age gate is always on top */
+  #age-gate {
+    backdrop-filter: blur(4px);
+  }
+  
+  /* Animation for modal */
+  #age-gate > div {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

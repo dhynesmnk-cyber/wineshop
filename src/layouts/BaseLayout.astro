@@ -1,0 +1,112 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  canonicalURL?: string;
+  image?: string;
+  type?: 'website' | 'article' | 'product';
+  publishedTime?: string;
+}
+
+const {
+  title = 'Wine Drop - Premium Local Wine Delivery',
+  description = 'Discover and order premium wines from local wineries delivered to your door. Age-restricted products, 21+ only.',
+  canonicalURL = Astro.url.href,
+  image = '/og-image.jpg',
+  type = 'website',
+  publishedTime,
+} = Astro.props;
+
+const siteUrl = 'https://winedrop.example.com';
+const ogImage = image.startsWith('http') ? image : `${siteUrl}${image}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalURL} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    
+    <!-- Additional SEO -->
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Wine Drop" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    
+    <!-- Preload fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <title>{title}</title>
+  </head>
+  <body class="bg-cream-50 text-gray-900 min-h-screen flex flex-col font-serif">
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-burgundy-600 text-white px-4 py-2 rounded-md z-50">
+      Skip to main content
+    </a>
+    
+    <slot name="header" />
+    
+    <main id="main-content" class="flex-grow">
+      <slot />
+    </main>
+    
+    <slot name="footer" />
+    
+    <slot name="scripts" />
+  </body>
+</html>
+
+<style is:global>
+  /* Editorial design system */
+  :root {
+    --color-burgundy-primary: #c41e3a;
+    --color-gold-primary: #eab308;
+    --color-cream-base: #fffffc;
+  }
+  
+  body {
+    font-family: Georgia, Cambria, 'Times New Roman', Times, serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 600;
+  }
+  
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Focus styles for accessibility */
+  *:focus-visible {
+    outline: 2px solid var(--color-burgundy-primary);
+    outline-offset: 2px;
+  }
+  
+  /* Selection color */
+  ::selection {
+    background-color: var(--color-burgundy-primary);
+    color: white;
+  }
+</style>

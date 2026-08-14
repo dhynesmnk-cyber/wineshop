@@ -1,0 +1,30 @@
+---
+import { sanityFetch } from '../../lib/sanity';
+import { BLOG_POST_QUERY } from '../../lib/sanity-queries';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+interface Props {
+  posts: BlogPost[];
+}
+
+export async function getStaticPaths() {
+  try {
+    const posts = await sanityFetch(BLOG_POST_QUERY);
+    return [
+      {
+        params: {},
+        props: { posts: posts || [] },
+      },
+    ];
+  } catch (error) {
+    console.error('Error fetching blog posts:', error);
+    return [
+      {
+        params: {},
+        props: { posts: [] },
+      },
+    ];
+  }
+}
+
+const { posts } = Astro.props;

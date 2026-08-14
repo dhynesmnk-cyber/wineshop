@@ -1,0 +1,316 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+interface Props {
+  city: string;
+  cityName: string;
+  state: string;
+  suppliers: Supplier[];
+  featuredProducts: Product[];
+}
+
+// List of supported cities with coordinates for LocalBusiness schema
+const supportedCities: Record<string, { name: string; state: string; lat: number; lng: number; description: string }> = {
+  'new-york': { name: 'New York', state: 'NY', lat: 40.7128, lng: -74.0060, description: 'Premium wine delivery in NYC and surrounding areas' },
+  'los-angeles': { name: 'Los Angeles', state: 'CA', lat: 34.0522, lng: -118.2437, description: 'Curated wines delivered across LA County' },
+  'chicago': { name: 'Chicago', state: 'IL', lat: 41.8781, lng: -87.6298, description: 'Local wine delivery in Chicagoland' },
+  'houston': { name: 'Houston', state: 'TX', lat: 29.7604, lng: -95.3698, description: 'Texas wine selection delivered to Houston' },
+  'phoenix': { name: 'Phoenix', state: 'AZ', lat: 33.4484, lng: -112.0740, description: 'Desert wine delivery in Phoenix metro' },
+  'philadelphia': { name: 'Philadelphia', state: 'PA', lat: 39.9526, lng: -75.1652, description: 'Wine delivery in Philadelphia and suburbs' },
+  'san-antonio': { name: 'San Antonio', state: 'TX', lat: 29.4241, lng: -98.4936, description: 'Hill Country wines delivered to San Antonio' },
+  'san-diego': { name: 'San Diego', state: 'CA', lat: 32.7157, lng: -117.1611, description: 'Coastal wine selection in San Diego' },
+  'dallas': { name: 'Dallas', state: 'TX', lat: 32.7767, lng: -96.7970, description: 'DFW wine delivery service' },
+  'san-jose': { name: 'San Jose', state: 'CA', lat: 37.3382, lng: -121.8863, description: 'Silicon Valley wine delivery' },
+};
+
+export async function getStaticPaths() {
+  return Object.entries(supportedCities).map(([city, data]) => ({
+    params: { city },
+    props: { 
+      city, 
+      cityName: data.name, 
+      state: data.state,
+      suppliers: [], // Would fetch from Sanity based on location
+      featuredProducts: [], // Would fetch geo-filtered products
+    },
+  }));
+}
+
+const { city, cityName, state, suppliers, featuredProducts } = Astro.props;
+const cityData = supportedCities[city];
+
+const canonicalUrl = `https://wine-drop.example.com/wine-delivery-${city}`;
+const pageTitle = `Wine Delivery in ${cityName}, ${state} | Wine Drop`;
+const pageDescription = `${cityData.description}. Same-day and scheduled delivery available from local wineries.`;
+---
+// LocalBusiness JSON-LD structured data
+const localBusinessSchema = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": `Wine Drop ${cityName}`,
+  "description": cityData.description,
+  "url": canonicalUrl,
+  "telephone": "+1-800-WINE-DROP",
+  "areaServed": {
+    "@type": "City",
+    "name": cityName,
+    "address": {
+      "@type": "PostalAddress",
+      "addressRegion": state,
+      "addressCountry": "US"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": cityData.lat,
+      "longitude": cityData.lng
+    }
+  },
+  "offers": {
+    "@type": "Offer",
+    "itemOffered": {
+      "@type": "Service",
+      "name": "Wine Delivery Service",
+      "description": "Same-day and scheduled wine delivery from local wineries"
+    }
+  },
+  "openingHoursSpecification": {
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    "opens": "09:00",
+    "closes": "21:00"
+  }
+};
+
+// FAQ content for this city
+const faqs = [
+  {
+    question: `How fast can I get wine delivered in ${cityName}?`,
+    answer: `We offer same-day delivery for orders placed before 2 PM in ${cityName}. Scheduled deliveries are available up to 7 days in advance.`
+  },
+  {
+    question: 'What areas do you serve?',
+    answer: `We deliver throughout ${cityName} and the surrounding metropolitan area, typically within a 50-mile radius of downtown.`
+  },
+  {
+    question: 'Do I need to be home for delivery?',
+    answer: 'Yes, someone 21 or older must be present to sign for the delivery. We cannot leave wine unattended.'
+  },
+  {
+    question: 'What if I miss my delivery?',
+    answer: 'Our driver will attempt redelivery the next business day. You can also reschedule through your order confirmation email.'
+  },
+  {
+    question: 'Are there delivery fees?',
+    answer: 'Delivery is free for orders over $100. Otherwise, a flat $9.99 fee applies to all orders in the ${cityName} area.'
+  }
+];
+---
+// Breadcrumb schema
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://wine-drop.example.com"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Wine Delivery",
+      "item": `${canonicalUrl}`
+    }
+  ]
+};
+---
+<BaseLayout
+  title={pageTitle}
+  description={pageDescription}
+  canonicalURL={canonicalUrl}
+  ogImage={`https://wine-drop.example.com/og-${city}.png`}
+  twitterCard="summary_large_image"
+>
+  <!-- LocalBusiness Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify(localBusinessSchema)} />
+  
+  <!-- Breadcrumb Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  
+  <!-- FAQ Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map((faq, i) => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  })} />
+
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-r from-burgundy-900 to-burgundy-700 text-white py-16 md:py-24">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-4">
+        Wine Delivery in {cityName}, {state}
+      </h1>
+      <p class="text-xl md:text-2xl text-cream-100 max-w-3xl mx-auto mb-8">
+        {cityData.description}. Same-day and scheduled delivery available from local wineries.
+      </p>
+      <a 
+        href="/shop" 
+        class="inline-block bg-gold-500 hover:bg-gold-400 text-burgundy-900 font-bold py-4 px-8 rounded-lg transition-colors shadow-lg"
+      >
+        Shop Wines Now
+      </a>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="py-16 bg-cream-50">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl md:text-4xl font-serif font-bold text-burgundy-900 text-center mb-12">
+        How Wine Delivery Works in {cityName}
+      </h2>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="text-center p-6 bg-white rounded-lg shadow-md">
+          <div class="w-16 h-16 bg-burgundy-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-3xl font-bold text-burgundy-600">1</span>
+          </div>
+          <h3 class="text-xl font-bold text-burgundy-800 mb-2">Browse & Select</h3>
+          <p class="text-gray-600">Choose from curated wines available for delivery in your area.</p>
+        </div>
+        <div class="text-center p-6 bg-white rounded-lg shadow-md">
+          <div class="w-16 h-16 bg-burgundy-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-3xl font-bold text-burgundy-600">2</span>
+          </div>
+          <h3 class="text-xl font-bold text-burgundy-800 mb-2">Schedule Delivery</h3>
+          <p class="text-gray-600">Pick a convenient time slot. Same-day available for orders before 2 PM.</p>
+        </div>
+        <div class="text-center p-6 bg-white rounded-lg shadow-md">
+          <div class="w-16 h-16 bg-burgundy-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-3xl font-bold text-burgundy-600">3</span>
+          </div>
+          <h3 class="text-xl font-bold text-burgundy-800 mb-2">Receive & Enjoy</h3>
+          <p class="text-gray-600">Someone 21+ must sign for delivery. Sit back and enjoy your wines!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Products (placeholder - would be populated from Sanity) -->
+  <section class="py-16">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl md:text-4xl font-serif font-bold text-burgundy-900 text-center mb-4">
+        Popular Wines in {cityName}
+      </h2>
+      <p class="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+        Discover the most loved wines by customers in your area.
+      </p>
+      
+      {featuredProducts && featuredProducts.length > 0 ? (
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {featuredProducts.map((product: Product) => (
+            <a href={`/product/${product.slug?.current}`} class="group">
+              <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow">
+                {product.images?.[0] && (
+                  <img
+                    src={product.images[0]}
+                    alt={product.name}
+                    class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                )}
+                <div class="p-4">
+                  <h3 class="font-serif font-bold text-lg text-burgundy-900 group-hover:text-gold-600 transition-colors">
+                    {product.name}
+                  </h3>
+                  <p class="text-gray-500 text-sm mt-1">{product.region}</p>
+                  <p class="text-gold-600 font-bold mt-2">${product.price?.toFixed(2)}</p>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-12 bg-cream-50 rounded-lg">
+          <p class="text-gray-600 mb-4">Browse our full selection of wines available in {cityName}.</p>
+          <a href="/shop" class="text-burgundy-600 hover:text-burgundy-700 font-medium">View All Wines &rarr;</a>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- Local Suppliers (placeholder) -->
+  <section class="py-16 bg-cream-100">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl md:text-4xl font-serif font-bold text-burgundy-900 text-center mb-4">
+        Local Wineries Serving {cityName}
+      </h2>
+      <p class="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+        Support local businesses with wines from nearby suppliers.
+      </p>
+      
+      {suppliers && suppliers.length > 0 ? (
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {suppliers.map((supplier: Supplier) => (
+            <div class="bg-white rounded-lg p-6 shadow-md">
+              <h3 class="font-serif font-bold text-xl text-burgundy-900 mb-2">{supplier.name}</h3>
+              <p class="text-gray-600 mb-4">{supplier.location?.city}, {supplier.location?.state}</p>
+              <p class="text-gray-500 text-sm mb-4">{supplier.description}</p>
+              <a href={`/supplier/${supplier.slug?.current}`} class="text-burgundy-600 hover:text-burgundy-700 font-medium">
+                View Wines &rarr;
+              </a>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-12">
+          <p class="text-gray-600">Multiple local suppliers deliver to {cityName}.</p>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="py-16">
+    <div class="max-w-3xl mx-auto px-4">
+      <h2 class="text-3xl md:text-4xl font-serif font-bold text-burgundy-900 text-center mb-12">
+        Frequently Asked Questions
+      </h2>
+      <div class="space-y-4">
+        {faqs.map((faq, index) => (
+          <details class="group bg-cream-50 rounded-lg p-4 cursor-pointer">
+            <summary class="font-semibold text-burgundy-800 list-none flex justify-between items-center">
+              {faq.question}
+              <span class="ml-4 text-burgundy-600 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <p class="mt-3 text-gray-700">{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="bg-burgundy-900 text-white py-16">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+      <h2 class="text-3xl md:text-4xl font-serif font-bold mb-4">
+        Ready to Explore Local Wines?
+      </h2>
+      <p class="text-xl text-cream-100 mb-8">
+        Get premium wines delivered to your door in {cityName} today.
+      </p>
+      <a 
+        href="/shop" 
+        class="inline-block bg-gold-500 hover:bg-gold-400 text-burgundy-900 font-bold py-4 px-8 rounded-lg transition-colors"
+      >
+        Start Shopping
+      </a>
+    </div>
+  </section>
+</BaseLayout>

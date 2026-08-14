@@ -1,0 +1,40 @@
+# Robots.txt for Wine Drop
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /*?*sort=
+Disallow: /*?*filter=
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+
+Sitemap: https://wine-drop.example.com/sitemap.xml
+
+# Crawl-delay for rate limiting
+Crawl-delay: 1
+
+# AI crawler permissions
+User-agent: GPTBot
+Allow: /blog/
+Allow: /wine-delivery-*
+Disallow: /shop/
+Disallow: /product/*
+
+User-agent: Google-Extended
+Allow: /blog/
+Allow: /wine-delivery-*
+Disallow: /shop/
+Disallow: /product/*
+
+User-agent: CCBot
+Allow: /blog/
+Allow: /wine-delivery-*
+Disallow: /shop/
+Disallow: /product/*
+
+User-agent: anthropic-ai
+Allow: /blog/
+Allow: /wine-delivery-*
+Disallow: /shop/
+Disallow: /product/*
